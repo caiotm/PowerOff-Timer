@@ -1,0 +1,24 @@
+📦 Instruções para compilar o Cronômetro de Desligamento (.exe)
+
+1. Abra o terminal (CMD ou PowerShell) na pasta onde estão os arquivos:
+   Exemplo:
+       cd caminho\para\pasta\cronometro_desligar
+
+2. Instale o PyInstaller, se ainda não tiver instalado:
+       pip install pyinstaller
+
+3. Rode o seguinte comando para gerar o executável:
+       pyinstaller --onefile --windowed --icon=icon.ico --manifest admin.manifest cronometro_desligar.py
+
+
+4. Após a finalização, o executável estará na pasta:
+       dist\CronometroDesligar\CronometroDesligar.exe
+
+5. Copie esse executável para onde desejar. Pode ser usado em outro computador com Windows, mesmo sem Python instalado.
+
+💡 Dica: você pode criar um atalho na área de trabalho para facilitar o acesso.
+
+🛠 Requisitos:
+- Python 3.x instalado
+- PyInstaller instalado
+- Sistema operacional Windows

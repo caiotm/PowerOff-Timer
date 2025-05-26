@@ -1,3 +1,4 @@
+
 import os
 import platform
 import tkinter as tk
@@ -13,7 +14,6 @@ def resource_path(relative_path):
     except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
-
 
 if platform.system() == "Windows":
     try:
@@ -38,6 +38,27 @@ if platform.system() == "Windows":
 shutdown_thread = None
 cancel_event = threading.Event()
 
+def mostrar_aviso_temporario(mensagem, duracao=3000):
+    aviso = tk.Toplevel()
+    aviso.overrideredirect(True)  # Remove a borda da janela
+    aviso.attributes("-topmost", True)
+    aviso.configure(bg="#323232")  # Cor de fundo escura
+
+    # Centralizar na tela
+    largura = 320
+    altura = 80
+    x = (aviso.winfo_screenwidth() // 2) - (largura // 2)
+    y = (aviso.winfo_screenheight() // 2) - (altura // 2)
+    aviso.geometry(f"{largura}x{altura}+{x}+{y}")
+
+    # Mensagem
+    label = tk.Label(aviso, text=mensagem, font=("Segoe UI", 12, "bold"),
+                     bg="#323232", fg="white", wraplength=300, justify="center")
+    label.pack(expand=True, fill="both", padx=10, pady=10)
+
+    # Fechar automaticamente após 'duracao' milissegundos
+    aviso.after(duracao, aviso.destroy)
+
 def shutdown_system():
     if platform.system() == "Windows":
         os.system("shutdown /s /f /t 0")
@@ -52,7 +73,7 @@ def countdown_timer(total_seconds):
             if cancel_event.is_set():
                 return
             time.sleep(1)
-        messagebox.showwarning("Aviso!", "O computador será desligado em 30 segundos!")
+        mostrar_aviso_temporario("O computador será desligado em 30 segundos!")
         for _ in range(30):
             if cancel_event.is_set():
                 return
@@ -85,9 +106,12 @@ def cancel_timer():
     messagebox.showinfo("Cancelado", "O desligamento foi cancelado.")
 
 root = tk.Tk()
-root.title("⏱️ Cronômetro de Desligamento")
+root.title("Cronômetro de Desligamento")
 root.configure(bg="#f0f0f0")
-root.iconbitmap(resource_path("icon.ico"))
+try:
+    root.iconbitmap(resource_path("icon.ico"))
+except:
+    pass
 root.geometry("320x200")
 root.resizable(False, False)
 
@@ -97,10 +121,6 @@ h = root.winfo_height()
 x = (root.winfo_screenwidth() // 2) - (w // 2)
 y = (root.winfo_screenheight() // 2) - (h // 2)
 root.geometry(f"{w}x{h}+{x}+{y}")
-
-
-
-
 
 
 

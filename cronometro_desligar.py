@@ -88,6 +88,21 @@ x = (root.winfo_screenwidth() // 2) - (w // 2)
 y = (root.winfo_screenheight() // 2) - (h // 2)
 root.geometry(f"{w}x{h}+{x}+{y}")
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 title = tk.Label(root, text="Configure o tempo:", font=("Segoe UI", 14, "bold"), bg="#f0f0f0")
 title.pack(pady=10)
 

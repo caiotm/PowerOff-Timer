@@ -6,6 +6,15 @@ import threading
 import time
 import sys
 
+# Função para acessar recursos mesmo quando empacotado com PyInstaller
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS  # Diretório temporário usado pelo PyInstaller
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+
 if platform.system() == "Windows":
     try:
         import winshell
@@ -78,6 +87,7 @@ def cancel_timer():
 root = tk.Tk()
 root.title("⏱️ Cronômetro de Desligamento")
 root.configure(bg="#f0f0f0")
+root.iconbitmap(resource_path("icon.ico"))
 root.geometry("320x200")
 root.resizable(False, False)
 

@@ -10,6 +10,8 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import subprocess
 
+def iniciar_bot():
+    subprocess.Popen([sys.executable, "bot_telegram.py"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 # Função para acessar recursos mesmo quando empacotado com PyInstaller
 def resource_path(relative_path):
@@ -105,18 +107,20 @@ def cancel_timer():
 
 # ===== NOVA INTEGRAÇÃO TELEGRAM (versão 20+) =====
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("Comando /start recebido!")
     await update.message.reply_text("Bot de desligamento online. Envie /desligar_em 30 ou /cancelar.")
 
+
 async def desligar_em(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print("Comando /desligar_em recebido!")  # <<< veja se aparece no terminal
     try:
         minutos = int(context.args[0])
-        entry_hours.delete(0, tk.END)
-        entry_minutes.delete(0, tk.END)
-        entry_hours.insert(0, str(minutos // 60))
-        entry_minutes.insert(0, str(minutos % 60))
-        start_timer()
+        with open("comando_bot.txt", "w") as f:
+            f.write(f"START {minutos}")
+        print(f"Arquivo comando_bot.txt criado com: START {minutos}")
         await update.message.reply_text(f"Desligamento agendado para {minutos} minutos.")
-    except:
+    except Exception as e:
+        print(f"Erro no comando desligar_em: {e}")
         await update.message.reply_text("Erro: use /desligar_em <minutos>")
 
 async def cancelar(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -199,6 +203,9 @@ def verificar_comandos():
 iniciar_bot()
 # Verifica comandos a cada 1s
 verificar_comandos()
+
+iniciar_bot()
+
 # Inicia GUI
 root.mainloop()
 

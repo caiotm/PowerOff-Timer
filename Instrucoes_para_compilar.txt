@@ -10,7 +10,7 @@
 3. Rode o seguinte comando para gerar o executável:
        pyinstaller --onefile --windowed --icon=icon.ico --add-data "icon.ico;." --manifest admin.manifest cronometro_desligar.py
 python cronometro_desligar.py
-
+pip install python-telegram-bot
 
 4. Após a finalização, o executável estará na pasta:
        dist\CronometroDesligar\CronometroDesligar.exe

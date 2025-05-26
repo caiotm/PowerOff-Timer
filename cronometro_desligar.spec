@@ -1,25 +1,31 @@
+# cronometro_desligar.spec
 # -*- mode: python ; coding: utf-8 -*-
-
+import os
+block_cipher = None
 
 a = Analysis(
     ['cronometro_desligar.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('icon.ico', '.')] if os.path.exists('icon.ico') else [],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
+    win_no_prefer_redirects=False,
+    win_private_assemblies=False,
+    cipher=block_cipher,
     noarchive=False,
-    optimize=0,
 )
-pyz = PYZ(a.pure)
+
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
 exe = EXE(
     pyz,
     a.scripts,
     a.binaries,
+    a.zipfiles,
     a.datas,
     [],
     name='cronometro_desligar',
@@ -27,14 +33,6 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    upx_exclude=[],
-    runtime_tmpdir=None,
     console=False,
-    disable_windowed_traceback=False,
-    argv_emulation=False,
-    target_arch=None,
-    codesign_identity=None,
-    entitlements_file=None,
-    icon=['icon.ico'],
-    manifest='admin.manifest',
+    icon='icon.ico' if os.path.exists('icon.ico') else None,
 )

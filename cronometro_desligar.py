@@ -1,4 +1,3 @@
-
 import os
 import platform
 import tkinter as tk
@@ -6,11 +5,16 @@ from tkinter import messagebox
 import threading
 import time
 import sys
+import asyncio
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+import subprocess
+
 
 # Função para acessar recursos mesmo quando empacotado com PyInstaller
 def resource_path(relative_path):
     try:
-        base_path = sys._MEIPASS  # Diretório temporário usado pelo PyInstaller
+        base_path = sys._MEIPASS
     except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
@@ -40,23 +44,17 @@ cancel_event = threading.Event()
 
 def mostrar_aviso_temporario(mensagem, duracao=3000):
     aviso = tk.Toplevel()
-    aviso.overrideredirect(True)  # Remove a borda da janela
+    aviso.overrideredirect(True)
     aviso.attributes("-topmost", True)
-    aviso.configure(bg="#323232")  # Cor de fundo escura
-
-    # Centralizar na tela
+    aviso.configure(bg="#323232")
     largura = 320
     altura = 80
     x = (aviso.winfo_screenwidth() // 2) - (largura // 2)
     y = (aviso.winfo_screenheight() // 2) - (altura // 2)
     aviso.geometry(f"{largura}x{altura}+{x}+{y}")
-
-    # Mensagem
     label = tk.Label(aviso, text=mensagem, font=("Segoe UI", 12, "bold"),
-                     bg="#323232", fg="white", wraplength=300, justify="center")
+                     bg="#FFDA0A", fg="white", wraplength=300, justify="center")
     label.pack(expand=True, fill="both", padx=10, pady=10)
-
-    # Fechar automaticamente após 'duracao' milissegundos
     aviso.after(duracao, aviso.destroy)
 
 def shutdown_system():
@@ -105,6 +103,31 @@ def cancel_timer():
     cancel_event.set()
     messagebox.showinfo("Cancelado", "O desligamento foi cancelado.")
 
+# ===== NOVA INTEGRAÇÃO TELEGRAM (versão 20+) =====
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Bot de desligamento online. Envie /desligar_em 30 ou /cancelar.")
+
+async def desligar_em(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        minutos = int(context.args[0])
+        entry_hours.delete(0, tk.END)
+        entry_minutes.delete(0, tk.END)
+        entry_hours.insert(0, str(minutos // 60))
+        entry_minutes.insert(0, str(minutos % 60))
+        start_timer()
+        await update.message.reply_text(f"Desligamento agendado para {minutos} minutos.")
+    except:
+        await update.message.reply_text("Erro: use /desligar_em <minutos>")
+
+async def cancelar(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    cancel_timer()
+    await update.message.reply_text("Desligamento cancelado.")
+
+def iniciar_bot():
+    subprocess.Popen([sys.executable, "bot_telegram.py"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+# GUI Principal
 root = tk.Tk()
 root.title("Cronômetro de Desligamento")
 root.configure(bg="#f0f0f0")
@@ -121,17 +144,6 @@ h = root.winfo_height()
 x = (root.winfo_screenwidth() // 2) - (w // 2)
 y = (root.winfo_screenheight() // 2) - (h // 2)
 root.geometry(f"{w}x{h}+{x}+{y}")
-
-
-
-
-
-
-
-
-
-
-
 
 title = tk.Label(root, text="Configure o tempo:", font=("Segoe UI", 14, "bold"), bg="#f0f0f0")
 title.pack(pady=10)
@@ -156,4 +168,40 @@ btn_start.grid(row=0, column=0, padx=10)
 btn_cancel = tk.Button(frame_buttons, text="Cancelar", font=("Segoe UI", 10, "bold"), bg="#F44336", fg="white", width=10, command=cancel_timer)
 btn_cancel.grid(row=0, column=1, padx=10)
 
+# Iniciar bot do Telegram
+threading.Thread(target=iniciar_bot, daemon=True).start()
+
+
+def verificar_comandos():
+    try:
+        if os.path.exists("comando_bot.txt"):
+            with open("comando_bot.txt", "r") as f:
+                comando = f.read().strip()
+            os.remove("comando_bot.txt")
+
+            if comando.startswith("START"):
+                minutos = int(comando.split()[1])
+                entry_hours.delete(0, tk.END)
+                entry_minutes.delete(0, tk.END)
+                entry_hours.insert(0, str(minutos // 60))
+                entry_minutes.insert(0, str(minutos % 60))
+                start_timer()
+
+            elif comando == "CANCEL":
+                cancel_timer()
+
+    except Exception as e:
+        print("Erro ao processar comando do bot:", e)
+
+    root.after(1000, verificar_comandos)
+
+# Inicia o bot como processo separado
+iniciar_bot()
+# Verifica comandos a cada 1s
+verificar_comandos()
+# Inicia GUI
 root.mainloop()
+
+
+
+

@@ -10,8 +10,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import subprocess
 
-def iniciar_bot():
-    subprocess.Popen([sys.executable, "bot_telegram.py"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
 
 # Função para acessar recursos mesmo quando empacotado com PyInstaller
 def resource_path(relative_path):
@@ -127,8 +126,22 @@ async def cancelar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cancel_timer()
     await update.message.reply_text("Desligamento cancelado.")
 
+
+
 def iniciar_bot():
-    subprocess.Popen([sys.executable, "bot_telegram.py"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if os.environ.get("IS_BOT_PROCESS") == "1":
+        return
+
+    from bot_telegram import iniciar_bot_telegram
+
+    def rodar_bot():
+        os.environ["IS_BOT_PROCESS"] = "1"
+        iniciar_bot_telegram()
+
+    threading.Thread(target=rodar_bot, daemon=True).start()
+
+
+
 
 
 # GUI Principal
@@ -184,12 +197,18 @@ def verificar_comandos():
             os.remove("comando_bot.txt")
 
             if comando.startswith("START"):
-                minutos = int(comando.split()[1])
+                minutos = float(comando.split()[1]) 
+                total_seconds = int(minutos * 60)
+                
                 entry_hours.delete(0, tk.END)
                 entry_minutes.delete(0, tk.END)
-                entry_hours.insert(0, str(minutos // 60))
-                entry_minutes.insert(0, str(minutos % 60))
-                start_timer()
+                entry_hours.insert(0, str(total_seconds // 3600))
+                entry_minutes.insert(0, str((total_seconds % 3600) // 60))
+                
+                global shutdown_thread
+                cancel_event.clear()
+                shutdown_thread = threading.Thread(target=countdown_timer, args=(total_seconds,), daemon=True)
+                shutdown_thread.start()
 
             elif comando == "CANCEL":
                 cancel_timer()
@@ -200,11 +219,13 @@ def verificar_comandos():
     root.after(1000, verificar_comandos)
 
 # Inicia o bot como processo separado
-iniciar_bot()
+if os.environ.get("IS_BOT_PROCESS") != "1":
+    iniciar_bot()
+
 # Verifica comandos a cada 1s
 verificar_comandos()
 
-iniciar_bot()
+
 
 # Inicia GUI
 root.mainloop()

@@ -46,7 +46,7 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
     print(f"Erro: {context.error}")
 
 async def main():
-    app = ApplicationBuilder().token("7958716518:AAG6MJMiMDGb_s2QghcsmDQwlXEQKBAR0HE").build()
+    app = ApplicationBuilder().token("SEU_TOKEN_AQUI").build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("desligar_em", desligar_em))
     app.add_handler(CommandHandler("desligar", desligar))
@@ -55,6 +55,7 @@ async def main():
     print("Bot do Telegram rodando...")
     await app.run_polling()
 
-if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
+def iniciar_bot_telegram():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     loop.run_until_complete(main())
